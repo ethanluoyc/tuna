@@ -53,7 +53,7 @@ def create_experiments(experiments, output=None):
     with open(os.path.join(here, 'tune.sub'), 'r') as template_file:
         output.write(template_file.read())
         output.write('\n\n')
-        output.write('executable = {}\n'.format(os.path.join(here, "runner.py")))
+        output.write('executable = tuna-run\n')
 
     for name, spec in experiments.items():
         fn_file, fn_name = get_function_info(spec['entry'])

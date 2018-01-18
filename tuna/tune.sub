@@ -1,10 +1,4 @@
-#############################
-##
-## Example Condor job specification
-##
-##############################
-
-# This is a comment.
+# AUTO-GENERATED, DO NOT EDIT BY HAND.
 
 # This defines what job universe we want the job to run in.
 # 'vanilla' is the simplest option for basic command execution.
