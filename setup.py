@@ -5,7 +5,7 @@ setup(
     version='',
     packages=['tuna'],
     url='',
-    license='',
+    license='Apache V2',
     author='Yicheng Luo',
     author_email='',
     description=''

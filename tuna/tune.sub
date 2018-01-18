@@ -29,7 +29,6 @@ getenv = True
 # This specifies what commandline arguments should be passed to the executable.
 
 # requirements = regexp("^(graphic)[0-9][0-9]", TARGET.Machine)
-executable      = runner.py
 output          = run.out
 # As above, but for STDERR.
 error           = run.err

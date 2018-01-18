@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from tuna.variant_generator import make_parser
 import sys
 

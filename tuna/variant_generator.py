@@ -12,7 +12,7 @@ import argparse
 import json
 from tuna.condor_gen import escape, quote
 
-here = os.path.dirname(__file__)
+here = os.path.abspath(os.path.dirname(__file__))
 
 DEFAULT_RESULTS_DIR = './'
 
@@ -414,8 +414,8 @@ def prepare_script(name, exp):
         os.makedirs(exp_dir, exist_ok=True)
         t = vars(trial).copy()
         argv = to_argv(t, True)
-        print('initial_dir: ', exp_dir)
-        print("arguments: " + "\"" + ' '.join(argv) + "\" \nqueue")
+        print('initialdir= ', exp_dir)
+        print("arguments= " + "\"" + ' '.join(argv) + "\" \nqueue")
 
 
 if __name__ == '__main__':
@@ -430,5 +430,7 @@ if __name__ == '__main__':
     with open(os.path.join(here, 'tune.sub'), 'r') as template_file:
         sys.stdout.write(template_file.read())
         sys.stdout.write('\n\n')
+        sys.stdout.write('executable = {}\n'.format(os.path.join(here, "runner.py")))
+
     for name, spec in exps.items():
         prepare_script(name, spec)
