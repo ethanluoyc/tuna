@@ -14,7 +14,7 @@ from tuna.condor_gen import escape, quote
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-DEFAULT_RESULTS_DIR = './'
+DEFAULT_RESULTS_DIR = './results'
 
 
 class Trial(object):

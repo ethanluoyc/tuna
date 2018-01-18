@@ -3,7 +3,7 @@ import argparse
 
 
 def quote(s):
-    return ("\"'" + s + "'\"") # Quoting arguments
+    return "\"'" + s + "'\""  # Quoting arguments
 
 
 def escape(config):
