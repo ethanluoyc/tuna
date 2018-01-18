@@ -50,10 +50,4 @@ class Trainable(object):
 
 
 def wrap_function(train_func):
-    from tuna.script_runner import ScriptRunner
-
-    class WrappedFunc(ScriptRunner):
-        def _trainable_func(self):
-            return train_func
-
-    return WrappedFunc
+    return train_func

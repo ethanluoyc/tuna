@@ -38,7 +38,16 @@ class TunaRunner(object):
             json.dump(self._state, f)
 
 
+def run(args):
+    from tuna.script_runner import import_function
+    exp_dir = os.path.abspath(os.path.join(args.local_dir, '_'.join([args.trainable_name, args.experiment_tag])))
+    print(exp_dir)
+    train_func = import_function(*args.entry.split(':'))
+    train_func(args.config)
+
+
 if __name__ == '__main__':
     parser = make_parser()
-    args = parser.parse_known_args()
-    print(args)
+    args, _ = parser.parse_known_args()
+    # print(args)
+    run(args)
