@@ -29,3 +29,4 @@ error           = run.err
 # Condor can write a time-ordered log of events related to this job-set
 # to a file we specify.  This specifies where that file should be written.
 log             = run.log
+requirements    = OpSys == "LINUX" && Arch =="INTEL"

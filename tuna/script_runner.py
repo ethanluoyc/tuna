@@ -40,3 +40,17 @@ def get_function_info(f):
     import inspect
     # m = inspect.getmodule(f)
     return inspect.getfile(f), f.__name__
+
+
+class TrainingContext(object):
+    def __init__(self, experiment_dir, config):
+        self.experiment_dir = experiment_dir
+
+
+def run(args):
+    logdir = os.path.abspath(
+        os.path.join(args.local_dir,
+                     '_'.join([args.trainable_name, args.experiment_tag])))
+    ctx = TrainingContext(logdir, args.config)
+    train_func = import_function(*args.entry.split(':'))
+    train_func(ctx)
