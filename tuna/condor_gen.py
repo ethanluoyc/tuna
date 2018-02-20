@@ -34,6 +34,20 @@ def to_argv(config, escape_condor=False):
 
 
 def create_experiments(experiments, output=None):
+    """
+
+    Experiments specification takes the following form:
+    ```
+    experiments = {
+        'exp1': {"run": "run",
+                 "entry": train,
+                 "config": {
+                    "alpha": grid_search([0.2, 0.4, 0.6]),
+                    "beta":  grid_search([1, 2]),
+                }}
+    }
+    ```
+    """
     from tuna.script_runner import get_function_info
     if output is None:
         output = sys.stdout
@@ -47,6 +61,7 @@ def create_experiments(experiments, output=None):
             os.makedirs(exp_dir, exist_ok=True)
             t = vars(trial).copy()
             argv = to_argv(t, True)
+#            output.write"regexp(\"^(graphic)[0-9][0-9]\", TARGET.Machine)\n"
             output.write('initialdir = {}\n'.format(exp_dir))
             output.write("arguments = " + "\"" + ' '.join(argv) + "\" \nqueue\n")
 

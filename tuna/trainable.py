@@ -47,7 +47,3 @@ class Trainable(object):
         """Releases all resources used by this class."""
 
         pass
-
-
-def wrap_function(train_func):
-    return train_func

@@ -46,12 +46,6 @@ def make_parser(**kwargs):
              "user-defined trainable function or class registered in the "
              "tune registry.")
     parser.add_argument(
-        "--stop", default="{}", type=json.loads,
-        help="The stopping criteria, specified in JSON. The keys may be any "
-             "field in TrainingResult, e.g. "
-             "'{\"time_total_s\": 600, \"timesteps_total\": 100000}' to stop "
-             "after 600 seconds or 100k timesteps, whichever is reached first.")
-    parser.add_argument(
         "--config", default="{}", type=json.loads,
         help="Algorithm-specific configuration (e.g. env, hyperparams), "
              "specified in JSON.")
@@ -62,32 +56,9 @@ def make_parser(**kwargs):
         "--local-dir", default=DEFAULT_RESULTS_DIR, type=str,
         help="Local dir to save training results to. Defaults to '{}'.".format(
             DEFAULT_RESULTS_DIR))
-    parser.add_argument(
-        "--checkpoint-freq", default=0, type=int,
-        help="How many training iterations between checkpoints. "
-             "A value of 0 (default) disables checkpointing.")
     parser.add_argument("--entry", default="")
-    parser.add_argument("--restore", default=None, type=str,
-                        help="If specified, restore from this checkpoint.")
-    parser.add_argument("--trainable-name", default=None, type=str,
-                        help="If specified, restore from this checkpoint.")
-    parser.add_argument("--experiment-tag", default=None, type=str,
-                        help="If specified, restore from this checkpoint.")
-    # parser.add_argument(
-    #     "--upload-dir", default="", type=str,
-    #     help="Optional URI to upload training results to.")
-    # parser.add_argument(
-    #     "--resources", default='{"cpu": 1}', type=json_to_resources,
-    #     help="Machine resources to allocate per trial, e.g. "
-    #          "'{\"cpu\": 64, \"gpu\": 8}'. Note that GPUs will not be assigned "
-    #          "unless you specify them here.")
-    # parser.add_argument(
-    #     "--scheduler", default="FIFO", type=str,
-    #     help="FIFO (default), MedianStopping, or HyperBand.")
-    # parser.add_argument(
-    #     "--scheduler-config", default="{}", type=json.loads,
-    #     help="Config options to pass to the scheduler.")
-    # Note: this currently only makes sense when running a single trial
+    parser.add_argument("--trainable-name", default=None, type=str)
+    parser.add_argument("--experiment-tag", default=None, type=str)
     return parser
 
 def to_argv(config):
@@ -139,12 +110,8 @@ def generate_trials(unresolved_spec, output_path=''):
                 config=spec.get("config", {}),
                 local_dir=os.path.join(args.local_dir, output_path),
                 experiment_tag=experiment_tag,
-                #                resources=json_to_resources(spec.get("resources", {})),
-                #                stopping_criterion=spec.get("stop", {}),
-                checkpoint_freq=args.checkpoint_freq,
                 restore_path=spec.get("restore"),
                 entry=spec.get('entry')
-                #    upload_dir=args.upload_dir
             )
 
 

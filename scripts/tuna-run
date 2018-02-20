@@ -4,6 +4,7 @@ from tuna.variant_generator import make_parser
 import os
 import json
 import logging
+import signal
 
 _TUNA_STATE = "tuna_state.json"
 _logger = logging.getLogger(__name__)
@@ -41,14 +42,18 @@ class TunaRunner(object):
 class TrainingContext(object):
     def __init__(self, experiment_dir, config):
         self.experiment_dir = experiment_dir
-
+        self.config = config
 
 def run(args):
     from tuna.script_runner import import_function
     logdir = os.path.abspath(
         os.path.join(args.local_dir,
                      '_'.join([args.trainable_name, args.experiment_tag])))
+
     ctx = TrainingContext(logdir, args.config)
+    with open('config.json', 'w') as config_file:
+        json.dump(args.config, config_file)
+
     train_func = import_function(*args.entry.split(':'))
     train_func(ctx)
 
@@ -56,5 +61,4 @@ def run(args):
 if __name__ == '__main__':
     parser = make_parser()
     args, _ = parser.parse_known_args()
-    # print(args)
     run(args)
