@@ -21,12 +21,11 @@ getenv = True
 # named file.
 
 # This specifies what commandline arguments should be passed to the executable.
-
 # requirements = regexp("^(graphic)[0-9][0-9]", TARGET.Machine)
-output          = run.out
+output          = condor.out
 # As above, but for STDERR.
-error           = run.err
+error           = condor.err
 # Condor can write a time-ordered log of events related to this job-set
 # to a file we specify.  This specifies where that file should be written.
-log             = run.log
+log             = condor.log
 requirements    = OpSys == "LINUX" && Arch =="INTEL"

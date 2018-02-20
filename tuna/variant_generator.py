@@ -369,21 +369,3 @@ class _UnresolvedAccessGuard(dict):
 class RecursiveDependencyError(Exception):
     def __init__(self, msg):
         Exception.__init__(self, msg)
-
-
-def train(config, reporter=None):
-    print(config)
-
-
-if __name__ == '__main__':
-    from tuna.condor_gen import create_experiments
-    exps = {
-        'foo': {"run": "run",
-                "entry": train,
-                "stop": {"mean_accuracy": 100},
-                "config": {
-                    "alpha": grid_search([0.2, 0.4, 0.6]),
-                    "beta": grid_search([1, 2]),
-                }}
-    }
-    create_experiments(exps)
