@@ -1,6 +1,7 @@
 import htcondor
 import time
 import logging
+import os
 
 _POLL_EVERY_N_SECONDS = 5
 
@@ -14,10 +15,17 @@ class Executor(object):
     self.schedd = htcondor.Schedd()
     self._update_last_queried()
 
-  def submit(self, executable="/bin/echo", arguments="hello", count=1):
-    submit = htcondor.Submit({"executable": executable, "arguments": arguments})
+  def submit(self, executable="/bin/echo", arguments="hello", job_id=1, 
+             experiment_name='foo', ):
+    submit = htcondor.Submit(
+      {"executable": executable, 
+       "arguments": arguments,
+       "getenv": True,
+       "environment": "TUNA_RUN_ID=\"{}\" TUNA_EXPERIMENT_NAME=\"{}\"".format(job_id, experiment_name)
+       })
+
     with self.schedd.transaction() as txn:
-      cluster_id = submit.queue(txn, count=count)
+      cluster_id = submit.queue(txn, count=1)
       _logger.info("submitted {}".format(cluster_id))
       return cluster_id
 
