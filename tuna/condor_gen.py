@@ -12,7 +12,7 @@ def quote(s):
 
 
 def escape(config):
-    return config.replace("\"", "\"\"")
+    return config.replace("\"", "\\\"")
 
 
 def to_argv(config, escape_condor=False):

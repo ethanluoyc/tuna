@@ -1,23 +1,26 @@
 
 import json
-from tuna.local_executor import LocalExecutor
+from tuna.executor import Executor
 from tuna.script_runner import get_function_info, import_function
 from tuna import client
 import os
+import time
 
 _here = os.path.dirname(os.path.abspath(__file__))
 _RUNNER_FILE = os.path.join(_here, 'runner.py')
 
 def run(experiment_name, f, parameters_set):
+    from tuna.condor_gen import quote, escape
     fpath, fname = get_function_info(f)
-    exc = LocalExecutor()
+    exc = Executor()
     job_ids = []
     for i, param in enumerate(parameters_set):
-        exc.submit(_RUNNER_FILE, [fpath, fname, json.dumps(param)], 
+        exc.submit(_RUNNER_FILE, quote(" ".join([fpath, fname, escape(json.dumps(param))])),
             experiment_name=experiment_name,
             job_id=i)
         job_ids.append(i)
     exc.wait_on_all()
+    time.sleep(10)
     values = client.read_metrics(experiment_name)
     print(values)
 

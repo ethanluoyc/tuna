@@ -20,8 +20,10 @@ class Executor(object):
     submit = htcondor.Submit(
       {"executable": executable, 
        "arguments": arguments,
-       "getenv": True,
-       "environment": "TUNA_RUN_ID=\"{}\" TUNA_EXPERIMENT_NAME=\"{}\"".format(job_id, experiment_name)
+       "getenv": "True",
+       "output": "{}.out".format(job_id),
+       "error": "{}.err".format(job_id),
+       "environment": "TUNA_RUN_ID={};TUNA_EXPERIMENT_NAME={}".format(job_id, experiment_name)
        })
 
     with self.schedd.transaction() as txn:
@@ -62,11 +64,12 @@ class Executor(object):
     while True:
       running_response = self.schedd.query(constraint)
       if len(running_response) == 0:
-        history_response = self.schedd.history(constraint)
+        history_response = list(self.schedd.history(constraint, []))
         if len(history_response) == 0:
           raise ValueError("Unable to find for cluster_id == {}".format(cluster_id))
         if any([r['ExitStatus'] != 0 for r in history_response]):
           raise CondorExecutionError("Some of the processes have failed")
+        break
       else:
         time.sleep(_POLL_EVERY_N_SECONDS)
 
