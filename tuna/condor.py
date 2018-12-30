@@ -25,12 +25,12 @@ class CondorSubmittedRun(object):
                 history_response = list(self._schedd.history(constraint, []))
                 if len(history_response) == 0:
                     raise ValueError("Unable to find for cluster_id == {}".format(self._cluster_id))
-                if any([r['ExitStatus'] != 0 for r in history_response]):
+                if any([r['ExitCode'] != 0 for r in history_response]):
                     raise CondorExecutionError("Some of the processes have failed")
                 break
             else:
                 time.sleep(_POLL_EVERY_N_SECONDS)
-    
+
     def get_status(self):
         constraint = "ClusterId == {}".format(self._cluster_id)
         running_response = self._schedd.query(constraint)
@@ -38,7 +38,7 @@ class CondorSubmittedRun(object):
             history_response = list(self._schedd.history(constraint, []))
             if len(history_response) == 0:
                 raise ValueError("Unable to find for cluster_id == {}".format(self._cluster_id))
-            if any([r['ExitStatus'] != 0 for r in history_response]):
+            if any([r['ExitCode'] != 0 for r in history_response]):
                 return "FAILED"
             return "SUCCESS"
         else:
@@ -80,7 +80,7 @@ class CondorJobRunner(object):
 
     def _handle_complete(self, job_spec):
         job_id = "{}.{}".format(job_spec['ClusterId'], job_spec['ProcId'])
-        if int(job_spec['ExitStatus']) != 0:
+        if int(job_spec['ExitCode']) != 0:
             _logger.info("failed {}".format(job_id))
         else:
             _logger.info("finished {}".format(job_id))
@@ -114,11 +114,13 @@ class CondorJobRunner(object):
                 history_response = list(self.schedd.history(constraint, []))
                 if len(history_response) == 0:
                     raise ValueError("Unable to find for cluster_id == {}".format(cluster_id))
-                if any([r['ExitStatus'] != 0 for r in history_response]):
+                if any([int(r['ExitCode']) != 0 for r in history_response]):
                     raise CondorExecutionError("Some of the processes have failed")
                 break
             else:
                 time.sleep(_POLL_EVERY_N_SECONDS)
 
 if __name__ == "__main__":
-    pass
+    runner = CondorJobRunner()
+    run = runner.submit('./test.sh', "Hello", "world", 1)
+    run.wait()
