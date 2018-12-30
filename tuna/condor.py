@@ -1,8 +1,13 @@
-import htcondor
 import time
 import logging
 import os
 import sys
+import warnings
+
+try:
+    import htcondor
+except ImportError:
+    warnings.warn("Unable to import htcondor. You need htcondor for everything to work properly")
 
 _POLL_EVERY_N_SECONDS = 5
 
@@ -10,6 +15,21 @@ _logger = logging.getLogger("tuna.executor")
 
 def _build_environment_str(env_vars):
     return ";".join(["{}={}".format(k, v) for k, v in env_vars.items()])
+
+def _escape(original_s):
+    # http://research.cs.wisc.edu/htcondor/manual/v7.8/condor_submit.html#SECTION0011454000000000000000
+    s = original_s
+    if "'" in original_s:
+        s = s.replace("'", "''")
+    if '"' in original_s:
+        s = s.replace('"', '""')
+    if " " in original_s:
+        s = "'" + s + "'"
+    return s
+
+def _build_arg_str(args):
+    return '"' + " ".join([_escape(a) for a in args]) + '"'
+
 
 class CondorExecutionError(Exception):
     pass
@@ -63,6 +83,12 @@ class CondorJobRunner(object):
                submit_kwargs=None,
                ):
         
+        if isinstance(arguments, str):
+            import shlex
+            arguments = shlex.split(arguments)
+
+        arguments = _build_arg_str(shlex.split(arguments))
+
         submit_kwargs = submit_kwargs.copy() if submit_kwargs else {}
         submit_kwargs.update({
             "executable": executable, 
@@ -110,10 +136,7 @@ class CondorJobRunner(object):
     def wait_on_job(self, cluster_id):
         constraint = "ClusterId == {}".format(cluster_id)
         while True:
-
             running_response = self.schedd.query(constraint)
-
-
             if len(running_response) == 0:
                 history_response = list(self.schedd.history(constraint, []))
                 if len(history_response) == 0:
@@ -148,5 +171,5 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
     runner = CondorJobRunner()
     for t in range(10):
-      run = runner.submit("/bin/sh", "\"-c 'sleep {}'\"".format(t), submit_kwargs={'error': '{}.error'.format(t)})
+      run = runner.submit("/bin/sh", "-c 'sleep {}'".format(t), submit_kwargs={'error': '{}.error'.format(t)})
     runner.wait_on_all()
