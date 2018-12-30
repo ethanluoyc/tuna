@@ -7,13 +7,15 @@ _POLL_EVERY_N_SECONDS = 5
 
 _logger = logging.getLogger("tuna.executor")
 
+def _build_environment_str(env_vars):
+    return ";".join(["{}={}".format(k, v) for k, v in env_vars.items()])
+
 class CondorExecutionError(Exception):
     pass
 
 class CondorSubmittedRun(object):
-    def __init__(self, run_id, cluster_id, schedd):
+    def __init__(self, cluster_id, schedd):
         super(CondorSubmittedRun, self).__init__()
-        self._run_id = run_id
         self._cluster_id = cluster_id
         self._schedd = schedd
 
@@ -47,10 +49,6 @@ class CondorSubmittedRun(object):
     def cancel(self):
         raise NotImplementedError
 
-    @property
-    def run_id(self):
-        return self._run_id
-
 
 class CondorJobRunner(object):
     def __init__(self):
@@ -60,23 +58,25 @@ class CondorJobRunner(object):
     def submit(self, 
                executable, 
                arguments,
-               experiment_name,
-               run_id):
+               env_vars=None,
+               submit_kwargs=None,
+               ):
         
-        submit = htcondor.Submit({
+        submit_kwargs = submit_kwargs.copy() if submit_kwargs else {}
+        submit_kwargs.update({
             "executable": executable, 
             "arguments": arguments,
-            "getenv": "True",
-            "output": "{}.out".format(run_id),
-            "error": "{}.err".format(run_id),
-            "log": "{}.log".format(run_id),
-            "environment": "TUNA_RUN_ID={}; TUNA_EXPERIMENT_NAME={}".format(run_id, experiment_name)
-            })
+            
+        })
+        if env_vars:
+            submit_kwargs['environment'] = _build_environment_str(env_vars)
+
+        submit = htcondor.Submit(submit_kwargs)
 
         with self.schedd.transaction() as txn:
             cluster_id = submit.queue(txn, count=1)
             _logger.info("submitted {}".format(cluster_id))
-            return CondorSubmittedRun(run_id, cluster_id, self.schedd)
+            return CondorSubmittedRun(cluster_id, self.schedd)
 
     def _handle_complete(self, job_spec):
         job_id = "{}.{}".format(job_spec['ClusterId'], job_spec['ProcId'])
@@ -120,7 +120,25 @@ class CondorJobRunner(object):
             else:
                 time.sleep(_POLL_EVERY_N_SECONDS)
 
+
+def run_condor(executable, 
+               arguments,
+               experiment_name,
+               run_id
+               ):
+    # run = run_condor('./test.sh', "Hello", "world", 1)
+    env = {
+        "TUNA_RUN_ID": run_id,
+        "TUNA_EXPERIMENT_NAME": experiment_name
+    }
+    runner = CondorJobRunner()
+    return runner.submit(
+        executable, 
+        arguments, 
+        env_vars=env,
+        submit_kwargs={"getenv": "True"}
+    )
+
 if __name__ == "__main__":
     runner = CondorJobRunner()
-    run = runner.submit('./test.sh', "Hello", "world", 1)
-    run.wait()
+    runner.submit("/usr/bin/echo", "Hello world")
